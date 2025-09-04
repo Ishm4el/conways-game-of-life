@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { createElement, useEffect, useRef, useState } from "react";
 import "./App.css";
 
 type run = boolean;
@@ -9,8 +9,50 @@ interface Controlls {
   setRun: setRun;
 }
 
-function Display() {
-  return <></>;
+interface Display {
+  displayRef: React.RefObject<HTMLElement | null>;
+}
+
+const DISPLAY_WIDTH: number = 30,
+  DISPLAY_HEIGHT: number = 15;
+
+function Display({ displayRef }: Display) {
+  const generateDisplay = () => {
+    const display = [];
+    for (let i = 0; i < DISPLAY_HEIGHT; i++) {
+      const rowcolumns = [];
+      for (let j = 0; j < DISPLAY_WIDTH; j++) {
+        rowcolumns.push(
+          createElement("div", {
+            className: "life-container",
+            "data-x": j,
+            "data-y": i,
+            "data-living": Math.floor(Math.random() * 2) === 1,
+            onClick: (ev) => {
+              console.log(
+                `x: ${ev.currentTarget.dataset.x}, y: ${ev.currentTarget.dataset.y}`
+              );
+            },
+          })
+        );
+      }
+      const row = createElement(
+        "div",
+        {
+          className: "life-row",
+        },
+        rowcolumns
+      );
+      display.push(row);
+    }
+    return display;
+  };
+
+  return (
+    <section className="display-container" ref={displayRef}>
+      {generateDisplay()}
+    </section>
+  );
 }
 
 function Controlls({ run, setRun }: Controlls) {
@@ -23,7 +65,7 @@ function Controlls({ run, setRun }: Controlls) {
   };
 
   return (
-    <div className="controlls-container">
+    <section className="controlls-container">
       {run ? (
         <>
           <button onClick={buttonPauseHandler}>Pause</button>
@@ -34,13 +76,14 @@ function Controlls({ run, setRun }: Controlls) {
           <button onClick={buttonStartHandler}>Start</button>
         </>
       )}
-    </div>
+    </section>
   );
 }
 
 export default function App() {
   const intervalId = useRef<number | undefined>(undefined);
   const [run, setRun] = useState<boolean>(false);
+  const displayRef = useRef<null | HTMLElement>(null);
 
   useEffect(() => {
     if (run) {
@@ -54,7 +97,7 @@ export default function App() {
 
   return (
     <>
-      <Display />
+      <Display displayRef={displayRef} />
       <Controlls run={run} setRun={setRun} />
     </>
   );
