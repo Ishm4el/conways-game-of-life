@@ -1,12 +1,41 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
+type run = boolean;
+type setRun = React.Dispatch<React.SetStateAction<boolean>>;
+
+interface Controlls {
+  run: run;
+  setRun: setRun;
+}
+
 function Display() {
   return <></>;
 }
 
-function Controlls() {
-  return <></>;
+function Controlls({ run, setRun }: Controlls) {
+  const buttonStartHandler = () => {
+    setRun(true);
+  };
+
+  const buttonPauseHandler = () => {
+    setRun(false);
+  };
+
+  return (
+    <div className="controlls-container">
+      {run ? (
+        <>
+          <button onClick={buttonPauseHandler}>Pause</button>
+        </>
+      ) : (
+        <>
+          <button>Generate Placements</button>
+          <button onClick={buttonStartHandler}>Start</button>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function App() {
@@ -22,10 +51,11 @@ export default function App() {
       clearInterval(intervalId.current);
     };
   });
+
   return (
     <>
       <Display />
-      <Controlls />
+      <Controlls run={run} setRun={setRun} />
     </>
   );
 }
