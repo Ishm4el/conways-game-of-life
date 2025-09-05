@@ -27,10 +27,12 @@ interface Display {
 const DISPLAY_WIDTH: number = 30,
   DISPLAY_HEIGHT: number = 15;
 
+// use to create a GameContext
 const GameContext = createContext<null | {
   run: boolean;
 }>(null);
 
+// use to get the context of the GameContext
 function useGameContext() {
   const gameContext = useContext(GameContext);
   if (!gameContext) {
@@ -41,6 +43,7 @@ function useGameContext() {
   return gameContext;
 }
 
+// checks whether the cell at x and y is alive or not
 const isAlive = (x: number, y: number) => {
   return document.querySelector(
     `div[data-x="${x}"][data-y="${y}"][data-living="true"]`
@@ -49,8 +52,13 @@ const isAlive = (x: number, y: number) => {
     : false;
 };
 
+// counts the number of living neighbors surrounding
+// the cell at x and y.
 const countLivingNeighbors = (x: number, y: number) => {
   let livingNeighbors = 0;
+
+  // increments 'livingNeighbors' if a
+  // neighbor cell at x and y is alive
   const incrementLivingNeighbors = (x: number, y: number) => {
     if (isAlive(x, y)) livingNeighbors++;
   };
@@ -76,27 +84,28 @@ const countLivingNeighbors = (x: number, y: number) => {
   return livingNeighbors;
 };
 
+// determines whether a cell at x and y should die
 const shouldDie = (x: number, y: number) => {
   const numberOfLivingNeighbors = countLivingNeighbors(x, y);
-
-  // console.log(
-  //   `x: ${x}, y: ${y}   -   numberOfLivingNeighbors: ${numberOfLivingNeighbors}}`
-  // );
-
   return !(numberOfLivingNeighbors === 2 || numberOfLivingNeighbors === 3);
 };
 
+// determines whether a cell at x and y should revive
 const shouldRevive = (x: number, y: number) => {
   const numberOfLivingNeighbors = countLivingNeighbors(x, y);
   return numberOfLivingNeighbors === 3;
 };
 
-function mouseEventHandler(ev: React.MouseEvent<HTMLElement, MouseEvent>) {
+// the mouseEventHandler to toggle a cell alive or dead
+function mouseEventHandlerToggleCell(
+  ev: React.MouseEvent<HTMLElement, MouseEvent>
+) {
   if (ev.currentTarget.dataset["living"] === "true")
     ev.currentTarget.setAttribute("data-living", "false");
   else ev.currentTarget.setAttribute("data-living", "true");
 }
 
+// Generates the initial display of the game.
 const generateDisplay = () => {
   const display = [];
   for (let i = 0; i < DISPLAY_HEIGHT; i++) {
@@ -109,7 +118,7 @@ const generateDisplay = () => {
           "data-y": i.toString(),
           // "data-living": false.toString(),
           "data-living": Math.floor(Math.random() * 3) === 1,
-          onClick: mouseEventHandler,
+          onClick: mouseEventHandlerToggleCell,
           key: crypto.randomUUID(),
         })
       );
@@ -127,11 +136,13 @@ const generateDisplay = () => {
   return display;
 };
 
+// applies the logic of the game to the board
 const stepLogic = (x: number, y: number) => {
   // console.log(`x: ${x}, y: ${y}   -   isAlive = ${isAlive(x, y)}`);
   return isAlive(x, y) ? !shouldDie(x, y) : shouldRevive(x, y);
 };
 
+// steps the game board 1 frame forward.
 const stepDisplay = () => {
   const newDisplay = [];
   for (let i = 0; i < DISPLAY_HEIGHT; i++) {
@@ -144,7 +155,7 @@ const stepDisplay = () => {
           "data-x": j.toString(),
           "data-y": i.toString(),
           "data-living": setLiving,
-          onClick: mouseEventHandler,
+          onClick: mouseEventHandlerToggleCell,
           key: crypto.randomUUID(),
         })
       );
@@ -163,7 +174,8 @@ const stepDisplay = () => {
   return newDisplay;
 };
 
-const Display = ({ displayRef }: Display) => {
+// The Display Component of the application
+function Display({ displayRef }: Display) {
   const intervalId = useRef<number | undefined>(undefined);
   const { run } = useGameContext();
   // let display = useMemo(() => generateDisplay(), []);
@@ -191,8 +203,9 @@ const Display = ({ displayRef }: Display) => {
       {display}
     </section>
   );
-};
+}
 
+// The controlls component of the application
 function Controlls({ run, setRun, displayKeyDispatch }: Controlls) {
   const buttonStartHandler = () => {
     setRun(true);
@@ -218,6 +231,7 @@ function Controlls({ run, setRun, displayKeyDispatch }: Controlls) {
   );
 }
 
+// The main app
 export default function App() {
   const [run, setRun] = useState<boolean>(false);
   const displayRef = useRef<null | HTMLElement>(null);
