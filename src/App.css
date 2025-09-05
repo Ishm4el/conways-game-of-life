@@ -4,6 +4,10 @@
   initial-value: 27px;
 }
 
+body {
+    background-color: aliceblue;
+}
+
 #root {
   display: flex;
   align-items: center;

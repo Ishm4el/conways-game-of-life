@@ -236,6 +236,7 @@ export default function App() {
 
   return (
     <>
+      <h1>Conran's Game of Life</h1>
       <GameContext.Provider value={contextValue}>
         <Display displayRef={displayRef} key={displayKey} run={run} />
         <Controlls
