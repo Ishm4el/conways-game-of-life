@@ -119,7 +119,7 @@ const generateDisplay = () => {
           // "data-living": false.toString(),
           "data-living": Math.floor(Math.random() * 3) === 1,
           onClick: mouseEventHandlerToggleCell,
-          key: crypto.randomUUID(),
+          key: `cell_x-${j}_y-${i}_${Date.now()}`,
         })
       );
     }
@@ -127,7 +127,7 @@ const generateDisplay = () => {
       "div",
       {
         className: "life-row",
-        key: crypto.randomUUID(),
+        key: `row_y-${i}_${Date.now()}`,
       },
       rowcolumns
     );
@@ -156,7 +156,7 @@ const stepDisplay = () => {
           "data-y": i.toString(),
           "data-living": setLiving,
           onClick: mouseEventHandlerToggleCell,
-          key: crypto.randomUUID(),
+          key: `cell_x-${j}_y-${i}_${Date.now()}`,
         })
       );
     }
@@ -164,7 +164,7 @@ const stepDisplay = () => {
       "div",
       {
         className: "life-row",
-        key: crypto.randomUUID(),
+        key: `row_y-${i}_${Date.now()}`,
       },
       rowcolumns
     );
