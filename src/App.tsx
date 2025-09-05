@@ -1,7 +1,6 @@
 import {
   createContext,
   createElement,
-  memo,
   useContext,
   useEffect,
   useMemo,
@@ -79,15 +78,24 @@ const countLivingNeighbors = (x: number, y: number) => {
 
 const shouldDie = (x: number, y: number) => {
   const numberOfLivingNeighbors = countLivingNeighbors(x, y);
-  return numberOfLivingNeighbors === 2 || numberOfLivingNeighbors === 3
-    ? false
-    : true;
+
+  // console.log(
+  //   `x: ${x}, y: ${y}   -   numberOfLivingNeighbors: ${numberOfLivingNeighbors}}`
+  // );
+
+  return !(numberOfLivingNeighbors === 2 || numberOfLivingNeighbors === 3);
 };
 
 const shouldRevive = (x: number, y: number) => {
   const numberOfLivingNeighbors = countLivingNeighbors(x, y);
   return numberOfLivingNeighbors === 3;
 };
+
+function mouseEventHandler(ev: React.MouseEvent<HTMLElement, MouseEvent>) {
+  if (ev.currentTarget.dataset["living"] === "true")
+    ev.currentTarget.setAttribute("data-living", "false");
+  else ev.currentTarget.setAttribute("data-living", "true");
+}
 
 const generateDisplay = () => {
   const display = [];
@@ -99,13 +107,10 @@ const generateDisplay = () => {
           className: "life-container",
           "data-x": j.toString(),
           "data-y": i.toString(),
-          "data-living": Math.floor(Math.random() * 2) === 1,
-          onClick: (ev) => {
-            const x = Number(ev.currentTarget.dataset.x);
-            const y = Number(ev.currentTarget.dataset.y);
-            console.log(`x: ${typeof x}, y: ${y}`);
-            if (x && y) console.log(isAlive(x, y));
-          },
+          // "data-living": false.toString(),
+          "data-living": Math.floor(Math.random() * 3) === 1,
+          onClick: mouseEventHandler,
+          key: crypto.randomUUID(),
         })
       );
     }
@@ -113,6 +118,7 @@ const generateDisplay = () => {
       "div",
       {
         className: "life-row",
+        key: crypto.randomUUID(),
       },
       rowcolumns
     );
@@ -122,8 +128,8 @@ const generateDisplay = () => {
 };
 
 const stepLogic = (x: number, y: number) => {
-  if (isAlive(x, y)) return !shouldDie(x, y);
-  else return shouldRevive(x, y);
+  // console.log(`x: ${x}, y: ${y}   -   isAlive = ${isAlive(x, y)}`);
+  return isAlive(x, y) ? !shouldDie(x, y) : shouldRevive(x, y);
 };
 
 const stepDisplay = () => {
@@ -131,18 +137,15 @@ const stepDisplay = () => {
   for (let i = 0; i < DISPLAY_HEIGHT; i++) {
     const rowcolumns = [];
     for (let j = 0; j < DISPLAY_WIDTH; j++) {
+      const setLiving = stepLogic(j, i);
       rowcolumns.push(
         createElement("div", {
           className: "life-container",
           "data-x": j.toString(),
           "data-y": i.toString(),
-          "data-living": `${stepLogic(j, i)}`,
-          onClick: (ev) => {
-            const x = Number(ev.currentTarget.dataset.x);
-            const y = Number(ev.currentTarget.dataset.y);
-            console.log(`x: ${typeof x}, y: ${y}`);
-            if (x && y) console.log(isAlive(x, y));
-          },
+          "data-living": setLiving,
+          onClick: mouseEventHandler,
+          key: crypto.randomUUID(),
         })
       );
     }
@@ -150,22 +153,37 @@ const stepDisplay = () => {
       "div",
       {
         className: "life-row",
+        key: crypto.randomUUID(),
       },
       rowcolumns
     );
     newDisplay.push(row);
   }
+  console.log(newDisplay);
   return newDisplay;
 };
 
-const Display = memo(({ displayRef }: Display) => {
+const Display = ({ displayRef }: Display) => {
+  const intervalId = useRef<number | undefined>(undefined);
   const { run } = useGameContext();
-  let display = useMemo(() => generateDisplay(), []);
-  console.log(run);
+  // let display = useMemo(() => generateDisplay(), []);
+  const [display, setDisplay] = useState(generateDisplay());
 
   useEffect(() => {
-    console.log("game is running");
-    display = stepDisplay();
+    if (run) {
+      intervalId.current = setInterval(() => {
+        setDisplay((prev) => {
+          console.log(prev);
+          return stepDisplay();
+        });
+      }, 400);
+    } else {
+      clearInterval(intervalId.current);
+    }
+
+    return () => {
+      clearInterval(intervalId.current);
+    };
   }, [run]);
 
   return (
@@ -173,7 +191,7 @@ const Display = memo(({ displayRef }: Display) => {
       {display}
     </section>
   );
-});
+};
 
 function Controlls({ run, setRun, displayKeyDispatch }: Controlls) {
   const buttonStartHandler = () => {
@@ -201,24 +219,11 @@ function Controlls({ run, setRun, displayKeyDispatch }: Controlls) {
 }
 
 export default function App() {
-  const intervalId = useRef<number | undefined>(undefined);
   const [run, setRun] = useState<boolean>(false);
   const displayRef = useRef<null | HTMLElement>(null);
   const [displayKey, displayKeyDispatch] = useReducer((x) => x + 1, 1);
 
   const contextValue = useMemo(() => ({ run }), [run]);
-
-  useEffect(() => {
-    console.log(displayRef.current);
-
-    if (run) {
-      intervalId.current = setInterval(() => {}, 400);
-    }
-
-    return () => {
-      clearInterval(intervalId.current);
-    };
-  }, []);
 
   return (
     <>
