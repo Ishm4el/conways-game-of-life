@@ -138,7 +138,6 @@ const generateDisplay = () => {
 
 // applies the logic of the game to the board
 const stepLogic = (x: number, y: number) => {
-  // console.log(`x: ${x}, y: ${y}   -   isAlive = ${isAlive(x, y)}`);
   return isAlive(x, y) ? !shouldDie(x, y) : shouldRevive(x, y);
 };
 
@@ -170,7 +169,6 @@ const stepDisplay = () => {
     );
     newDisplay.push(row);
   }
-  console.log(newDisplay);
   return newDisplay;
 };
 
@@ -184,10 +182,7 @@ function Display({ displayRef }: Display) {
   useEffect(() => {
     if (run) {
       intervalId.current = setInterval(() => {
-        setDisplay((prev) => {
-          console.log(prev);
-          return stepDisplay();
-        });
+        setDisplay(stepDisplay());
       }, 400);
     } else {
       clearInterval(intervalId.current);
